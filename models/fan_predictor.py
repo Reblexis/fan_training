@@ -54,8 +54,8 @@ class FANPredictor(object):
             raise ValueError('name must be set to either 2dfan2, 2dfan4, or 2dfan2_alt')
 
     @staticmethod
-    def create_config(gamma: float = 1.0, radius: float = 0.1, use_jit: bool = True) -> SimpleNamespace:
-        return SimpleNamespace(gamma=gamma, radius=radius, use_jit=use_jit)
+    def create_config(gamma: float = 1.0, radius: float = 0.1, use_jit: bool = False) -> SimpleNamespace:
+        return SimpleNamespace(gamma=gamma, radius=radius, use_jit=use_jit) #TODO: isa this important?
 
     @torch.no_grad()
     def __call__(self, image: np.ndarray, face_boxes: np.ndarray, rgb: bool = True,
@@ -100,7 +100,7 @@ class FANPredictor(object):
                 (0, 3, 1, 2)).astype(np.float32)).to(self.device) / 255.0
 
             # Get heatmaps
-            heatmaps, stem_feats, hg_feats = self.net(face_patches)
+            heatmaps, stem_feats, hg_feats = self.net.forward2(face_patches)
 
             # Get landmark coordinates and scores
             landmarks, landmark_scores = self._decode(heatmaps)

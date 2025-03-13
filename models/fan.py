@@ -179,6 +179,39 @@ class FAN(nn.Module):
                 previous = previous + ll + tmp_out_
 
         return outputs
+    
+    def forward2(self, x):
+        x = self.conv2(F.relu(self.bn1(self.conv1(x)), True))
+        if self.config.stem_pool_kernel_size > 1:
+            if self.config.use_avg_pool:
+                x = F.avg_pool2d(x, self.config.stem_pool_kernel_size)
+            else:
+                x = F.max_pool2d(x, self.config.stem_pool_kernel_size)
+        x = self.conv3(x)
+        x = self.conv4(x)
+
+        previous = x
+        hg_feats = []
+        tmp_out = None
+        for i in range(self.config.num_modules):
+            hg = self._modules['m' + str(i)](previous)
+
+            ll = hg
+            ll = self._modules['top_m_' + str(i)](ll)
+
+            ll = F.relu(self._modules['bn_end' + str(i)](self._modules['conv_last' + str(i)](ll)), True)
+
+            # Predict heatmaps
+            tmp_out = self._modules['l' + str(i)](ll)
+
+            if i < self.config.num_modules - 1:
+                ll = self._modules['bl' + str(i)](ll)
+                tmp_out_ = self._modules['al' + str(i)](tmp_out)
+                previous = previous + ll + tmp_out_
+
+            hg_feats.append(ll)
+
+        return tmp_out, x, tuple(hg_feats)
 
     @staticmethod
     def create_config(input_size=256, num_modules=2, hg_num_features=256, hg_depth=4,
