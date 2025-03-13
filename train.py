@@ -93,9 +93,6 @@ def plot_landmarks_on_image(image, landmarks_pred, landmarks_gt):
     img_np = image.transpose(1, 2, 0)
     # Scale from [0,1] to [0,255] range and convert to BGR for OpenCV
     img_np = (img_np * 255).astype(np.uint8)
-    cv2.imshow('image', img_np)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
     img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
     
     # For predicted landmarks, use the first prediction (original image, not flipped)
