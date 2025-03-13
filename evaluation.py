@@ -1,8 +1,8 @@
 import torch
 import sklearn
 import numpy as np
-from utils import flip_heatmaps, decode_landmarks
-from losses import heatmap_mse_loss, landmark_distance_loss
+from .utils import flip_heatmaps, decode_landmarks
+from .losses import heatmap_mse_loss, landmark_distance_loss
 
 
 __all__ = ['run_model', 'compute_landmark_errors', 'compute_auc', 'compute_accuracy']
@@ -13,7 +13,7 @@ def run_model(model, data_loader, pbar=None, gamma=1.0, radius=0.1):
     results = {'heatmap_mse_losses': np.array([]), 'landmark_distance_losses': np.array([]),
                'heatmap_errors': np.array([]), 'predicted_landmarks': np.array([]), 'landmark_scores': np.array([]),
                'landmarks': np.array([]), 'face_corners': np.array([]), 'landmark_bbox_corners': np.array([]),
-               'sample_weights': np.array([])}
+               'sample_weights': np.array([]), 'images': np.array([])}
     if pbar is not None:
         pbar.reset(total=len(data_loader))
         pbar.refresh()
@@ -24,6 +24,12 @@ def run_model(model, data_loader, pbar=None, gamma=1.0, radius=0.1):
         images = images.to(device)
         heatmaps = heatmaps.to(device)
         landmarks = landmarks.to(device)
+
+        # Store the images
+        if results['images'].shape[0] > 0:
+            results['images'] = np.concatenate((results['images'], images.cpu().numpy()))
+        else:
+            results['images'] = images.cpu().numpy()
 
         # Predict heatmaps
         all_predicted_heatmaps = model(torch.cat((images, images.flip(-1))))

@@ -1,5 +1,5 @@
 import torch
-from utils import decode_landmarks
+from .utils import decode_landmarks
 
 
 __all__ = ['heatmap_mse_loss', 'landmark_distance_loss']

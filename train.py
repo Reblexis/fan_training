@@ -6,9 +6,9 @@ from torch.utils.tensorboard import SummaryWriter
 import cv2
 import matplotlib.pyplot as plt
 
-from utils import *
-from losses import *
-from evaluation import *
+from .utils import *
+from .losses import *
+from .evaluation import *
 
 
 __all__ = ['train_model']
@@ -276,13 +276,13 @@ def plot_landmarks_on_image(image, landmarks_pred, landmarks_gt):
     
     # Convert normalized coordinates to pixel coordinates
     pred_points = np.column_stack([
-        landmarks_pred_to_plot[:, 0] * image.shape[2],
-        landmarks_pred_to_plot[:, 1] * image.shape[1]
+        landmarks_pred_to_plot[:, 0],
+        landmarks_pred_to_plot[:, 1]
     ]).astype(np.int32)
     
     gt_points = np.column_stack([
-        landmarks_gt[:, 0] * image.shape[2],
-        landmarks_gt[:, 1] * image.shape[1]
+        landmarks_gt[:, 0],
+        landmarks_gt[:, 1]
     ]).astype(np.int32)
     
     # Draw landmarks

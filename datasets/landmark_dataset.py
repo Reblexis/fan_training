@@ -7,7 +7,7 @@ import albumentations as augs
 from types import SimpleNamespace
 from torch.utils.data import Dataset
 
-from utils import *
+from ..utils import *
 
 
 ___all___ = ['LandmarkDataset']
@@ -116,7 +116,7 @@ class LandmarkDataset(Dataset):
             crop_margin = (int(-crop_box_tl[1]), int(crop_box_br[0] - im_width),
                            int(crop_box_br[1] - im_hight), int(-crop_box_tl[0]))
             crop_trans = augs.Compose(
-                [augs.CropAndPad(crop_margin, pad_mode=cv2.BORDER_CONSTANT, keep_size=False),
+                [augs.CropAndPad(crop_margin, border_mode=cv2.BORDER_CONSTANT, keep_size=False),
                  augs.Resize(int(np.round(self.config.image_size * (1 + self.config.temp_padding_factor))),
                              int(np.round(self.config.image_size * (1 + self.config.temp_padding_factor))))])
 
