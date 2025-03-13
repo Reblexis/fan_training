@@ -3,6 +3,8 @@ import torch
 import numpy as np
 from copy import deepcopy
 from torch.utils.tensorboard import SummaryWriter
+import cv2
+import matplotlib.pyplot as plt
 
 from utils import *
 from losses import *
@@ -259,3 +261,46 @@ def train_model(model, optimiser, train_data_loader, val_data_loader, num_epochs
     if not was_training:
         model.eval()
     return ckpt_path
+
+
+def plot_landmarks_on_image(image, landmarks_pred, landmarks_gt):
+    """Plot predicted and ground truth landmarks on the image using OpenCV."""
+    # Convert image from torch tensor to numpy and denormalize
+    img_np = image.transpose(1, 2, 0)
+    # Scale from [0,1] to [0,255] range and convert to BGR for OpenCV
+    img_np = (img_np * 255).astype(np.uint8)
+    img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+    
+    # For predicted landmarks, use the first prediction (original image, not flipped)
+    landmarks_pred_to_plot = landmarks_pred[0] if len(landmarks_pred.shape) == 3 else landmarks_pred
+    
+    # Convert normalized coordinates to pixel coordinates
+    pred_points = np.column_stack([
+        landmarks_pred_to_plot[:, 0] * image.shape[2],
+        landmarks_pred_to_plot[:, 1] * image.shape[1]
+    ]).astype(np.int32)
+    
+    gt_points = np.column_stack([
+        landmarks_gt[:, 0] * image.shape[2],
+        landmarks_gt[:, 1] * image.shape[1]
+    ]).astype(np.int32)
+    
+    # Draw landmarks
+    for point in pred_points:
+        cv2.circle(img_np, tuple(point), 3, (255, 0, 0), -1)  # Blue for predicted
+    
+    for point in gt_points:
+        cv2.circle(img_np, tuple(point), 3, (0, 0, 255), -1)  # Red for ground truth
+    
+    # Add legend directly on the image
+    cv2.putText(img_np, 'Predicted', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+    cv2.putText(img_np, 'Ground Truth', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+    
+    # Convert back to RGB for matplotlib/wandb display
+    img_rgb = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
+    
+    # Create a matplotlib figure (needed for wandb logging)
+    fig = plt.figure(figsize=(10, 10))
+    plt.imshow(img_rgb)
+    plt.axis('off')
+    return fig
