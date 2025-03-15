@@ -308,7 +308,8 @@ def train_model(model, optimiser, train_data_loader, val_data_loader, num_epochs
 
                 # Visualize predictions on a few validation images
                 num_viz_samples = min(5, len(val_results['images']))  # Visualize up to 5 samples
-                for i in range(num_viz_samples):
+                random_indices = np.random.choice(len(val_results['images']), num_viz_samples, replace=False)
+                for i in random_indices:
                     fig = plot_landmarks_on_image(
                         val_results['images'][i],
                         val_results['predicted_landmarks'][i],
